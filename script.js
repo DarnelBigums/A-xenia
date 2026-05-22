@@ -1,4 +1,4 @@
-// Game Variables
+// Game State Variables
 let savedMen = 0;
 let timeElapsed = 0;
 let gameInterval = null;
@@ -6,100 +6,66 @@ let timerInterval = null;
 let currentCyclopsPosition = 'left'; 
 let gameActive = false;
 
-// DOM Elements
-const savedCountDisplay = document.getElementById('saved-count');
-const timerDisplay = document.getElementById('timer');
-const startBtn = document.getElementById('start-btn');
-const cyclops = document.getElementById('cyclops');
-const leftSheep = document.getElementById('sheep-left');
-const rightSheep = document.getElementById('sheep-right');
-
-// Audio Triggers
-const baaSound = document.getElementById('sound-baa');
-const roarSound = document.getElementById('sound-roar');
-
-// Start Game Function
+// Function to start or reset the game
 function startGame() {
     savedMen = 0;
     timeElapsed = 0;
     gameActive = true;
-    savedCountDisplay.textContent = savedMen;
-    timerDisplay.textContent = "0.0";
-    startBtn.textContent = "Reset Game";
+    
+    document.getElementById('saved-count').textContent = savedMen;
+    document.getElementById('timer').textContent = "0.0";
+    document.getElementById('start-btn').textContent = "Reset Game";
 
     clearInterval(gameInterval);
     clearInterval(timerInterval);
 
-    // Start Timer
+    // Run the timer every 100ms
     timerInterval = setInterval(() => {
         timeElapsed += 0.1;
-        timerDisplay.textContent = timeElapsed.toFixed(1);
+        document.getElementById('timer').textContent = timeElapsed.toFixed(1);
     }, 100);
 
-    // Cyclops changes focus periodically
+    // Cyclops movement setup
     moveCyclops();
-    gameInterval = setInterval(moveCyclops, 1400); 
+    gameInterval = setInterval(moveCyclops, 1300); 
 }
 
-// AI logic for Polyphemus moving/listening
+// Moves the cyclops visually across the screen
 function moveCyclops() {
     if (!gameActive) return;
     
+    const cyclopsElement = document.getElementById('cyclops');
     currentCyclopsPosition = Math.random() < 0.5 ? 'left' : 'right';
     
     if (currentCyclopsPosition === 'left') {
-        cyclops.style.left = '25%';
+        cyclopsElement.style.left = '25%';
     } else {
-        cyclops.style.left = '75%';
+        cyclopsElement.style.left = '75%';
     }
 }
 
-// Handle Player Action
+// Logic handles clicking a sheep lane
 function jumpToSheep(chosenSide) {
-    // If player clicks a sheep BEFORE clicking begin, automatically start the game for them!
+    // If the game isn't started yet, clicking a sheep automatically acts as pressing "Begin"
     if (!gameActive) {
         startGame();
         return;
     }
 
-    // Play Audio Feedback safely
-    if (baaSound) {
-        baaSound.currentTime = 0;
-        baaSound.play().catch(e => console.log("Audio play prevented until interaction"));
-    }
-
-    // Check if Cyclops is guarding that side
+    // Win/Loss Condition Check
     if (chosenSide === currentCyclopsPosition) {
-        if (roarSound) {
-            roarSound.currentTime = 0;
-            roarSound.play().catch(e => {});
-        }
-        
-        alert("Polyphemus felt your presence! Odysseus's man scrambled back. Time Penalty applied (+3s)!");
+        alert("Polyphemus reached down and felt your presence! The warrior scrambled back. (+3s Penalty!)");
         timeElapsed += 3.0;
     } else {
-        // Safe Jump!
         savedMen++;
-        savedCountDisplay.textContent = savedMen;
+        document.getElementById('saved-count').textContent = savedMen;
 
         if (savedMen >= 10) {
-            endGame(true);
+            gameActive = false;
+            clearInterval(gameInterval);
+            clearInterval(timerInterval);
+            alert(`Victory! You safely guided all 10 men out of the cave in ${timeElapsed.toFixed(1)} seconds!`);
+            document.getElementById('start-btn').textContent = "Play Again";
         }
     }
 }
-
-function endGame(victory) {
-    gameActive = false;
-    clearInterval(gameInterval);
-    clearInterval(timerInterval);
-
-    if (victory) {
-        alert(`Success! You safely smuggled 10 Greek warriors out of the cave under the sheep in ${timeElapsed.toFixed(1)} seconds!`);
-        startBtn.textContent = "Play Again";
-    }
-}
-
-// Event Listeners
-startBtn.addEventListener('click', startGame);
-leftSheep.addEventListener('click', () => jumpToSheep('left'));
-rightSheep.addEventListener('click', () => jumpToSheep('right'));
