@@ -4,7 +4,175 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Escape from Polyphemus</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Ancient Greek / Cave Theme Aesthetics */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #1e130c, #9a7b56);
+            color: #f5ebe0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            margin-top: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: #e0a96d;
+            margin-bottom: 5px;
+        }
+
+        .game-container {
+            background: rgba(26, 17, 11, 0.85);
+            border: 3px solid #e0a96d;
+            border-radius: 12px;
+            padding: 20px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-bottom: 30px;
+        }
+
+        /* Scoreboard Styling */
+        .scoreboard {
+            display: flex;
+            justify-content: space-between;
+            background: #2c1a11;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-bottom: 2px solid #e0a96d;
+        }
+
+        /* The Cave Background with Open World Entrance */
+        .cave {
+            position: relative;
+            height: 340px;
+            /* Creates a rocky dark foreground arch framing an open sunny landscape */
+            background: 
+                radial-gradient(circle at 50% 30%, transparent 40%, #120a06 65%),
+                linear-gradient(to bottom, #87CEEB 0%, #a2d2ff 40%, #40916c 60%, #1d3557 100%);
+            margin: 20px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #4a3525;
+            box-shadow: inset 0 0 40px #000;
+        }
+
+        /* Stylized Cave Mouth Shape */
+        .cave::before {
+            content: '';
+            position: absolute;
+            top: 15%;
+            left: 15%;
+            right: 15%;
+            bottom: 0;
+            background: linear-gradient(to bottom, #bde0fe 0%, #2a9d8f 70%, #1d3557 100%);
+            border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+            z-index: 1;
+            box-shadow: 0 0 20px rgba(135, 206, 235, 0.5);
+        }
+
+        /* Subtle wave line to hint at the ocean in the distance */
+        .cave::after {
+            content: '~~~~~~~~~~~~~~~';
+            position: absolute;
+            bottom: 15%;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: rgba(29, 53, 87, 0.3);
+            font-size: 2rem;
+            z-index: 2;
+            letter-spacing: -2px;
+        }
+
+        .cyclops {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            transition: left 0.2s ease-in-out, transform 0.2s ease;
+            z-index: 5; /* In front of the background view */
+        }
+
+        .cyclops-label {
+            font-size: 0.9rem;
+            color: #ff4d4d;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-top: 5px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .sheep-lane {
+            position: absolute;
+            bottom: 15px;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            z-index: 10;
+        }
+
+        .sheep-btn {
+            background: transparent;
+            border: 2px solid transparent;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #fff;
+            font-weight: bold;
+            /* Smooth transitions for animations and disappearing act */
+            transition: transform 0.2s ease, filter 0.2s ease, opacity 0.3s ease, visibility 0.3s; 
+        }
+
+        .sheep-btn:hover {
+            transform: scale(1.15);
+            filter: drop-shadow(0 0 12px #e0a96d);
+        }
+
+        /* Cooldown effect: Physically hides the button and stops interactions */
+        .sheep-btn.cooldown {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .controls {
+            text-align: center;
+        }
+
+        #start-btn {
+            background-color: #e0a96d;
+            color: #1e130c;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        #start-btn:hover {
+            background-color: #f5ebe0;
+            transform: translateY(-2px);
+        }
+    </style>
 </head>
 <body>
 
@@ -33,7 +201,7 @@
 
             <div class="sheep-lane">
                 <button class="sheep-btn" id="sheep-left" onclick="jumpToSheep('left')">
-                    <svg viewBox="0 0 100 100" width="90" height="90">
+                    <svg viewBox="0 0 100 100" width="95" height="95">
                         <ellipse cx="50" cy="45" rx="30" ry="20" fill="#f0e6d2" />
                         <circle cx="72" cy="35" r="12" fill="#e0d6c2" />
                         <circle cx="74" cy="32" r="1.5" fill="#000" />
@@ -51,7 +219,7 @@
                 </button>
 
                 <button class="sheep-btn" id="sheep-right" onclick="jumpToSheep('right')">
-                    <svg viewBox="0 0 100 100" width="90" height="90">
+                    <svg viewBox="0 0 100 100" width="95" height="95">
                         <ellipse cx="50" cy="45" rx="30" ry="20" fill="#f0e6d2" />
                         <circle cx="72" cy="35" r="12" fill="#e0d6c2" />
                         <circle cx="74" cy="32" r="1.5" fill="#000" />
@@ -92,6 +260,10 @@
             document.getElementById('timer').textContent = "0.0";
             document.getElementById('start-btn').textContent = "Reset Game";
 
+            // Make sure both sheep buttons are completely visible when starting over
+            document.getElementById('sheep-left').classList.remove('cooldown');
+            document.getElementById('sheep-right').classList.remove('cooldown');
+
             clearInterval(gameInterval);
             clearInterval(timerInterval);
 
@@ -123,6 +295,11 @@
                 return;
             }
 
+            const targetBtn = chosenSide === 'left' ? document.getElementById('sheep-left') : document.getElementById('sheep-right');
+
+            // Guard check: Prevent clicking if this specific sheep is currently out of the cave
+            if (targetBtn.classList.contains('cooldown')) return;
+
             if (chosenSide === currentCyclopsPosition) {
                 alert("Polyphemus reached down and felt your presence! The warrior scrambled back. (+3s Penalty!)");
                 timeElapsed += 3.0;
@@ -136,6 +313,12 @@
                     clearInterval(timerInterval);
                     alert(`Victory! You safely guided all 10 men out of the cave in ${timeElapsed.toFixed(1)} seconds!`);
                     document.getElementById('start-btn').textContent = "Play Again";
+                } else {
+                    // Activate 2-second cooldown to show the sheep walking out of the cave
+                    targetBtn.classList.add('cooldown');
+                    setTimeout(() => {
+                        targetBtn.classList.remove('cooldown');
+                    }, 2000);
                 }
             }
         }
