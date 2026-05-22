@@ -32,24 +32,38 @@
             </div>
 
             <div class="sheep-lane">
-                <button class="sheep-btn" id="sheep-left">
-                    <svg viewBox="0 0 100 100" width="80" height="80">
-                        <ellipse cx="50" cy="55" rx="35" ry="25" fill="#f0e6d2" />
-                        <circle cx="75" cy="45" r="15" fill="#e0d6c2" />
-                        <circle cx="78" cy="42" r="2" fill="#000" />
-                        <rect x="35" y="75" width="6" height="15" fill="#333" />
-                        <rect x="55" y="75" width="6" height="15" fill="#333" />
+                <button class="sheep-btn" id="sheep-left" onclick="jumpToSheep('left')">
+                    <svg viewBox="0 0 100 100" width="90" height="90">
+                        <ellipse cx="50" cy="45" rx="30" ry="20" fill="#f0e6d2" />
+                        <circle cx="72" cy="35" r="12" fill="#e0d6c2" />
+                        <circle cx="74" cy="32" r="1.5" fill="#000" />
+                        <rect x="38" y="60" width="5" height="10" fill="#333" />
+                        <rect x="58" y="60" width="5" height="10" fill="#333" />
+                        
+                        <circle cx="50" cy="68" r="5" fill="#ffcc99" />
+                        <line x1="50" y1="73" x2="50" y2="88" stroke="#ffffff" stroke-width="3" />
+                        <line x1="50" y1="76" x2="38" y2="62" stroke="#ffffff" stroke-width="2" />
+                        <line x1="50" y1="76" x2="62" y2="62" stroke="#ffffff" stroke-width="2" />
+                        <line x1="50" y1="88" x2="42" y2="98" stroke="#ffffff" stroke-width="2" />
+                        <line x1="50" y1="88" x2="58" y2="98" stroke="#ffffff" stroke-width="2" />
                     </svg>
                     <span>Left Sheep</span>
                 </button>
 
-                <button class="sheep-btn" id="sheep-right">
-                    <svg viewBox="0 0 100 100" width="80" height="80">
-                        <ellipse cx="50" cy="55" rx="35" ry="25" fill="#f0e6d2" />
-                        <circle cx="75" cy="45" r="15" fill="#e0d6c2" />
-                        <circle cx="78" cy="42" r="2" fill="#000" />
-                        <rect x="35" y="75" width="6" height="15" fill="#333" />
-                        <rect x="55" y="75" width="6" height="15" fill="#333" />
+                <button class="sheep-btn" id="sheep-right" onclick="jumpToSheep('right')">
+                    <svg viewBox="0 0 100 100" width="90" height="90">
+                        <ellipse cx="50" cy="45" rx="30" ry="20" fill="#f0e6d2" />
+                        <circle cx="72" cy="35" r="12" fill="#e0d6c2" />
+                        <circle cx="74" cy="32" r="1.5" fill="#000" />
+                        <rect x="38" y="60" width="5" height="10" fill="#333" />
+                        <rect x="58" y="60" width="5" height="10" fill="#333" />
+                        
+                        <circle cx="50" cy="68" r="5" fill="#ffcc99" />
+                        <line x1="50" y1="73" x2="50" y2="88" stroke="#ffffff" stroke-width="3" />
+                        <line x1="50" y1="76" x2="38" y2="62" stroke="#ffffff" stroke-width="2" />
+                        <line x1="50" y1="76" x2="62" y2="62" stroke="#ffffff" stroke-width="2" />
+                        <line x1="50" y1="88" x2="42" y2="98" stroke="#ffffff" stroke-width="2" />
+                        <line x1="50" y1="88" x2="58" y2="98" stroke="#ffffff" stroke-width="2" />
                     </svg>
                     <span>Right Sheep</span>
                 </button>
@@ -57,10 +71,74 @@
         </div>
 
         <div class="controls">
-            <button id="start-btn">Begin Escape</button>
+            <button id="start-btn" onclick="startGame()">Begin Escape</button>
         </div>
     </main>
 
-    <script src="script.js"></script>
+    <script>
+        let savedMen = 0;
+        let timeElapsed = 0;
+        let gameInterval = null;
+        let timerInterval = null;
+        let currentCyclopsPosition = 'left'; 
+        let gameActive = false;
+
+        function startGame() {
+            savedMen = 0;
+            timeElapsed = 0;
+            gameActive = true;
+            
+            document.getElementById('saved-count').textContent = savedMen;
+            document.getElementById('timer').textContent = "0.0";
+            document.getElementById('start-btn').textContent = "Reset Game";
+
+            clearInterval(gameInterval);
+            clearInterval(timerInterval);
+
+            timerInterval = setInterval(() => {
+                timeElapsed += 0.1;
+                document.getElementById('timer').textContent = timeElapsed.toFixed(1);
+            }, 100);
+
+            moveCyclops();
+            gameInterval = setInterval(moveCyclops, 1300); 
+        }
+
+        function moveCyclops() {
+            if (!gameActive) return;
+            
+            const cyclopsElement = document.getElementById('cyclops');
+            currentCyclopsPosition = Math.random() < 0.5 ? 'left' : 'right';
+            
+            if (currentCyclopsPosition === 'left') {
+                cyclopsElement.style.left = '25%';
+            } else {
+                cyclopsElement.style.left = '75%';
+            }
+        }
+
+        function jumpToSheep(chosenSide) {
+            if (!gameActive) {
+                startGame();
+                return;
+            }
+
+            if (chosenSide === currentCyclopsPosition) {
+                alert("Polyphemus reached down and felt your presence! The warrior scrambled back. (+3s Penalty!)");
+                timeElapsed += 3.0;
+            } else {
+                savedMen++;
+                document.getElementById('saved-count').textContent = savedMen;
+
+                if (savedMen >= 10) {
+                    gameActive = false;
+                    clearInterval(gameInterval);
+                    clearInterval(timerInterval);
+                    alert(`Victory! You safely guided all 10 men out of the cave in ${timeElapsed.toFixed(1)} seconds!`);
+                    document.getElementById('start-btn').textContent = "Play Again";
+                }
+            }
+        }
+    </script>
 </body>
 </html>
