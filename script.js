@@ -3,7 +3,7 @@ let savedMen = 0;
 let timeElapsed = 0;
 let gameInterval = null;
 let timerInterval = null;
-let currentCyclopsPosition = 'left'; // Can be 'left' or 'right'
+let currentCyclopsPosition = 'left'; 
 let gameActive = false;
 
 // DOM Elements
@@ -38,14 +38,13 @@ function startGame() {
 
     // Cyclops changes focus periodically
     moveCyclops();
-    gameInterval = setInterval(moveCyclops, 1400); // changes target every 1.4 seconds
+    gameInterval = setInterval(moveCyclops, 1400); 
 }
 
 // AI logic for Polyphemus moving/listening
 function moveCyclops() {
     if (!gameActive) return;
     
-    // Randomly pick left or right target
     currentCyclopsPosition = Math.random() < 0.5 ? 'left' : 'right';
     
     if (currentCyclopsPosition === 'left') {
@@ -57,21 +56,24 @@ function moveCyclops() {
 
 // Handle Player Action
 function jumpToSheep(chosenSide) {
-    if (!gameActive) return;
+    // If player clicks a sheep BEFORE clicking begin, automatically start the game for them!
+    if (!gameActive) {
+        startGame();
+        return;
+    }
 
-    // Feature Menu: Play Audio Feedback
-    try {
+    // Play Audio Feedback safely
+    if (baaSound) {
         baaSound.currentTime = 0;
-        baaSound.play();
-    } catch(e) { console.log("Audio waiting for user gesture"); }
+        baaSound.play().catch(e => console.log("Audio play prevented until interaction"));
+    }
 
     // Check if Cyclops is guarding that side
     if (chosenSide === currentCyclopsPosition) {
-        // Caught! Sound triggers and penalty applied
-        try {
+        if (roarSound) {
             roarSound.currentTime = 0;
-            roarSound.play();
-        } catch(e) {}
+            roarSound.play().catch(e => {});
+        }
         
         alert("Polyphemus felt your presence! Odysseus's man scrambled back. Time Penalty applied (+3s)!");
         timeElapsed += 3.0;
@@ -99,6 +101,5 @@ function endGame(victory) {
 
 // Event Listeners
 startBtn.addEventListener('click', startGame);
-
 leftSheep.addEventListener('click', () => jumpToSheep('left'));
 rightSheep.addEventListener('click', () => jumpToSheep('right'));
