@@ -51,13 +51,14 @@
             border-bottom: 2px solid #e0a96d;
         }
 
-        /* Cave Backdrop looking out toward the horizon */
+        /* Cave Backdrop looking out toward your ocean image */
         .cave {
             position: relative;
             height: 320px;
-            background: 
-                radial-gradient(circle at 50% 25%, transparent 35%, #120a06 65%),
-                linear-gradient(to bottom, #a2d2ff 0%, #e0a96d 40%, #1d3557 70%, #0f1c2e 100%);
+            /* Tries to load your uploaded ocean.jpg file. Falls back to a gradient if not found */
+            background-image: url('ocean.jpg'), linear-gradient(to bottom, #a2d2ff, #e0a96d, #1d3557);
+            background-size: cover;
+            background-position: center;
             margin: 20px 0;
             border-radius: 8px;
             overflow: hidden;
@@ -65,9 +66,22 @@
             box-shadow: inset 0 0 40px #000;
         }
 
+        /* Silhouette effect that cuts out a 'cave mouth' shape framing the background */
+        .cave::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 50% 20%, transparent 35%, rgba(18, 10, 6, 0.95) 65%);
+            pointer-events: none;
+            z-index: 2;
+        }
+
         .cyclops {
             position: absolute;
-            top: 40px;
+            top: 45px;
             left: 50%;
             transform: translateX(-50%);
             text-align: center;
@@ -81,7 +95,7 @@
             font-weight: bold;
             text-transform: uppercase;
             margin-top: 5px;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.75);
             padding: 2px 6px;
             border-radius: 4px;
         }
@@ -112,7 +126,6 @@
             filter: drop-shadow(0 0 12px #e0a96d);
         }
 
-        /* Strict Cooldown Visual Effect */
         .sheep-btn:disabled {
             opacity: 0.15;
             cursor: not-allowed;
@@ -141,7 +154,6 @@
             background-color: #f5ebe0;
         }
 
-        /* Leaderboard Styling */
         .leaderboard-box {
             background: #1c120c;
             border: 1px solid #e0a96d;
@@ -175,23 +187,18 @@
         .score-item:last-child {
             border-bottom: none;
         }
-
-        .highlight-score {
-            color: #64dfdf;
-            font-weight: bold;
-        }
     </style>
 </head>
 <body>
 
     <header>
         <h1>The Odyssey: Escape Polyphemus</h1>
-        <p>Smuggle 15 warriors to the ships. Tap the safe sheep, but watch out for the cooldowns!</p>
+        <p>Smuggle 10 warriors to the ships. Tap the safe sheep, but watch out for the cooldowns!</p>
     </header>
 
     <main class="game-container">
         <div class="scoreboard">
-            <div class="stat">Men Escaped: <span id="saved-count">0</span> / 15</div>
+            <div class="stat">Men Escaped: <span id="saved-count">0</span> / 10</div>
             <div class="stat">Timer: <span id="timer">0.0</span>s</div>
         </div>
 
@@ -250,8 +257,7 @@
 
         <div class="leaderboard-box">
             <h3>Leaderboard (Top Records)</h3>
-            <ul class="score-list" id="leaderboard-list">
-                </ul>
+            <ul class="score-list" id="leaderboard-list"></ul>
         </div>
     </main>
 
@@ -263,16 +269,14 @@
         let currentCyclopsPosition = 'left'; 
         let gameActive = false;
 
-        // Pre-seeded high scores array
         let highScores = [
-            { name: "Donovan", time: 45.4 },
-            { name: "Vicente", time: 49.6 },
-            { name: "Brianna", time: 50 },
-            { name: "Otto", time: 52.5 },
-            { name: "Jimmy", time: 132.0 }
+            { name: "Donovan", time: 5.4 },
+            { name: "Vicente", time: 6.6 },
+            { name: "Brianna", time: 6.8 },
+            { name: "Otto", time: 7.5 },
+            { name: "Jimmy", time: 60.0 }
         ];
 
-        // Initialize display on load
         window.onload = function() {
             renderLeaderboard();
         };
@@ -281,13 +285,11 @@
             const listElement = document.getElementById('leaderboard-list');
             listElement.innerHTML = '';
             
-            // Sort ascending by time
             highScores.sort((a, b) => a.time - b.time);
 
             highScores.forEach((entry, index) => {
                 const li = document.createElement('li');
                 li.className = 'score-item';
-                
                 let timeString = entry.time >= 60 ? "1 minute" : `${entry.time.toFixed(1)} seconds`;
                 li.innerHTML = `<span>${index + 1}. ${entry.name}</span> <span>${timeString}</span>`;
                 listElement.appendChild(li);
@@ -346,26 +348,24 @@
                 savedMen++;
                 document.getElementById('saved-count').textContent = savedMen;
 
-                if (savedMen >= 15) {
+                // Back down to 10 men required for victory
+                if (savedMen >= 10) {
                     gameActive = false;
                     clearInterval(gameInterval);
                     clearInterval(timerInterval);
                     
                     const finalTime = parseFloat(timeElapsed.toFixed(1));
                     
-                    // Prompt the player to enter their name right away
                     setTimeout(() => {
-                        let playerName = prompt(`Victory! You safely guided all 15 men out of the cave in ${finalTime} seconds!\nEnter your name for the scoreboard:`);
+                        let playerName = prompt(`Victory! You safely guided all 10 men out of the cave in ${finalTime} seconds!\nEnter your name for the scoreboard:`);
                         if (!playerName) playerName = "Anonymous Hero";
                         
-                        // Push new score and re-render
                         highScores.push({ name: playerName, time: finalTime });
                         renderLeaderboard();
                         
                         document.getElementById('start-btn').textContent = "Play Again";
                     }, 100);
                 } else {
-                    // Force a hard 2-second cooldown on the clicked sheep button
                     targetBtn.disabled = true;
                     setTimeout(() => {
                         targetBtn.disabled = false;
